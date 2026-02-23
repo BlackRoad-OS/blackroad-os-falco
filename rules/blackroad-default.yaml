@@ -1,0 +1,88 @@
+rules:
+  - id: shell_in_container
+    name: shell_in_container
+    description: Detect shell spawned in container
+    priority: critical
+    tags: [container, shell]
+    condition:
+      field: source
+      operator: contains
+      value: "container"
+    output_format: "Shell spawned in container: %{user} %{command}"
+
+  - id: sensitive_file_read
+    name: sensitive_file_read
+    description: Detect read access to sensitive files
+    priority: error
+    tags: [file, sensitive]
+    condition:
+      field: file_path
+      operator: regex
+      value: "^(/etc/shadow|/etc/passwd|/root/\\.ssh)"
+    output_format: "Sensitive file accessed: %{file_path} by %{user}"
+
+  - id: outbound_connection_to_c2
+    name: outbound_connection_to_c2
+    description: Detect suspicious outbound connections to C2
+    priority: critical
+    tags: [network, c2, threat]
+    condition:
+      field: network
+      operator: contains
+      value: "c2"
+    output_format: "Suspicious C2 connection: %{network} from %{user}"
+
+  - id: privilege_escalation
+    name: privilege_escalation
+    description: Detect privilege escalation attempts
+    priority: error
+    tags: [privilege, escalation]
+    condition:
+      field: command
+      operator: regex
+      value: "(sudo|su|sudo -i)"
+    output_format: "Privilege escalation attempt: %{command} by %{user}"
+
+  - id: crypto_mining_process
+    name: crypto_mining_process
+    description: Detect cryptocurrency mining processes
+    priority: error
+    tags: [mining, malware]
+    condition:
+      field: command
+      operator: regex
+      value: "(xmrig|monero|stratum|hashrate)"
+    output_format: "Crypto mining detected: %{command}"
+
+  - id: ssh_brute_force
+    name: ssh_brute_force
+    description: Detect SSH brute force attempts
+    priority: warning
+    tags: [ssh, authentication]
+    condition:
+      field: source
+      operator: contains
+      value: "ssh"
+    output_format: "SSH activity detected: %{source}"
+
+  - id: large_file_write
+    name: large_file_write
+    description: Detect large file writes (potential data exfiltration)
+    priority: warning
+    tags: [file, exfiltration]
+    condition:
+      field: file_path
+      operator: contains
+      value: "exfil"
+    output_format: "Large file write detected: %{file_path} by %{user}"
+
+  - id: suspicious_cron
+    name: suspicious_cron
+    description: Detect suspicious cron job modifications
+    priority: warning
+    tags: [cron, persistence]
+    condition:
+      field: file_path
+      operator: regex
+      value: "/var/spool/cron"
+    output_format: "Cron modification detected: %{file_path} by %{user}"
